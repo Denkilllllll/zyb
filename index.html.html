@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Polaroid — Yuliana</title>
+  <style>
+    :root{--accent:#FFDD57;--bg:#f3f6f9;--dark:#0b1220}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);min-height:100vh;display:flex;align-items:center;justify-content:center}
+
+    /* Intro animation */
+    .intro-wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#071023,#0b2233);z-index:100}
+    .intro-card{color:#fff;text-align:center}
+    .tooth{font-size:96px;opacity:0;transform:translateY(10px) scale(.95);animation:appear 2s forwards}
+    .name{font-size:40px;letter-spacing:6px;margin-top:8px;opacity:0;transform:translateY(10px);animation:appear 2s .15s forwards}
+    .title-x{font-size:26px;margin-top:6px;opacity:0;transform:translateY(12px);animation:appear 2s .35s forwards}
+    .line2{font-size:18px;margin-top:6px;color:#dfe9ff;opacity:0;transform:translateY(12px);animation:appear 2s .55s forwards}
+    @keyframes appear{0%{opacity:0;transform:translateY(10px) scale(.95)}60%{opacity:1;transform:translateY(0) scale(1.02)}100%{opacity:0;transform:translateY(-18px) scale(.86)}}
+
+    /* Biblizoom animation overlay */
+    .biblizoom{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:transparent;z-index:90;pointer-events:none;opacity:0}
+    .biblizoom.show{pointer-events:auto;opacity:1}
+    .biblizoom .label{font-size:58px;color:#fff;transform:scale(.6);opacity:0;filter:drop-shadow(0 10px 30px rgba(0,0,0,0.6));animation:bzoom 1100ms ease forwards}
+    @keyframes bzoom{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1);opacity:0}}
+
+    /* App */
+    .app{opacity:0;transform:translateY(10px) scale(.995);transition:all .45s ease;z-index:10}
+    .app.show{opacity:1;transform:translateY(0) scale(1)}
+    .menu-card{background:#fff;border-radius:14px;padding:28px;box-shadow:0 18px 40px rgba(20,30,40,0.08);width:420px;max-width:92vw;text-align:center}
+    .menu-card h1{margin:0;font-size:22px;color:var(--dark)}
+    .menu-card p{margin:8px 0 18px;color:#5b6b7a}
+    .buttons{display:flex;gap:12px;justify-content:center}
+    .btn{padding:12px 16px;border-radius:10px;border:0;cursor:pointer;font-weight:700;background:var(--dark);color:#fff}
+    .thumb{margin-top:18px;border-radius:8px;overflow:hidden;border:1px solid #e6eef8}
+    .thumb img{display:block;width:100%;height:auto}
+
+    /* Fullscreen Polaroid Mode (kept) */
+    .polaroid-mode{position:fixed;inset:0;background:#071126;color:#08202a;display:none;align-items:center;justify-content:center;flex-direction:column;z-index:80}
+    .polaroid-mode.show{display:flex}
+    .polaroid-mode h1{font-size:72px;letter-spacing:8px;margin:0;color:var(--accent)}
+    .squares{position:absolute;inset:0;display:grid;grid-template-columns:repeat(12,1fr);grid-auto-rows:80px;gap:12px;padding:24px}
+    .square{background:var(--accent);opacity:.12;border-radius:6px;transform:scale(.9);animation:pop 1600ms infinite ease-in-out;}
+    .square:nth-child(odd){opacity:.08}
+    @keyframes pop{0%{transform:scale(.9);opacity:.06}50%{transform:scale(1.06);opacity:.26}100%{transform:scale(.9);opacity:.06}}
+    .polaroid-center{z-index:2;background:rgba(255,255,255,0.95);padding:18px;border-radius:12px;box-shadow:0 10px 40px rgba(2,6,23,0.6);text-align:center}
+    .polaroid-center img{max-width:480px;height:auto;border-radius:6px;display:block}
+    .polaroid-close{margin-top:12px;padding:10px 14px;border-radius:8px;border:0;background:#0b1220;color:#fff;cursor:pointer}
+
+    /* responsive tweaks */
+    @media(max-width:640px){.polaroid-mode h1{font-size:48px}.biblizoom .label{font-size:34px}.name{font-size:28px}.tooth{font-size:64px}}
+  </style>
+</head>
+<body>
+
+  <!-- Intro animation (2s) with added lines under YULIANA -->
+  <div class="intro-wrap" id="intro">
+    <div class="intro-card">
+      <div class="tooth" aria-hidden>🦷</div>
+      <div class="name">YULIANA</div>
+      <div class="title-x">X</div>
+      <div class="line2">BIBLIZOOM and POLAROID</div>
+    </div>
+  </div>
+
+  <!-- Biblizoom overlay (runs after intro) -->
+  <div class="biblizoom" id="biblizoom" aria-hidden="true">
+    <div class="label">BIBLIZOOM</div>
+  </div>
+
+  <!-- Main app (only Polaroid button) -->
+  <main class="app" id="app" aria-hidden="true">
+    <div class="menu-card">
+      <h1>Welcome — Polaroid</h1>
+      <p>Click the button to view the Polaroid.</p>
+
+      <div class="buttons">
+        <button class="btn" id="openPol">Polaroid</button>
+      </div>
+
+      <div class="thumb" id="thumb">
+        <img id="thumbImg" src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBxISEhUSEhIVFhUVDRcXGBcVGBcXFhgaFxYXGBcVFxcYHSggGBolGxgYITEhJSkrLi4uGB8zODMtNygtLisB/wAALCAAEAA0BAREA/8QAFwABAQEBAAAAAAAAAAAAAAAAAAECA//EABYQAQEBAAAAAAAAAAAAAAAAAAABAv/aAAwDAQACEAMQAAABx1eN6Qf//EABsQAQEBAQEBAQAAAAAAAAAAAAERIQAhMUFR/9oACAEBAAE/AKlq7a7V5s2v//EABYRAQEBAAAAAAAAAAAAAAAAAAABEv/aAAgBAgEBPwCj/8QAFhEBAQEAAAAAAAAAAAAAAAAAARAR/9oACAEDAQE/AKn/2Q==" alt="Polaroid thumbnail">
+      </div>
+    </div>
+  </main>
+
+  <!-- Fullscreen Polaroid Mode -->
+  <div class="polaroid-mode" id="polaroidMode" aria-hidden="true">
+    <div class="squares" aria-hidden="true"></div>
+    <h1>POLAROID</h1>
+    <div class="polaroid-center" id="polaroidCenter">
+      <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBxISEhUSEhIVFhUVDRcXGBcVGBcXFhgaFxYXGBcVFxcYHSggGBolGxgYITEhJSkrLi4uGB8zODMtNygtLisB/wAALCAAEAA0BAREA/8QAFwABAQEBAAAAAAAAAAAAAAAAAAECA//EABYQAQEBAAAAAAAAAAAAAAAAAAABAv/aAAwDAQACEAMQAAABx1eN6Qf//EABsQAQEBAQEBAQAAAAAAAAAAAAERIQAhMUFR/9oACAEBAAE/AKlq7a7V5s2v//EABYRAQEBAAAAAAAAAAAAAAAAAAABEv/aAAgBAgEBPwCj/8QAFhEBAQEAAAAAAAAAAAAAAAAAARAR/9oACAEDAQE/AKn/2Q==" alt="Polaroid big">
+      <div style='margin-top:10px;text-align:center;color:#07202a;font-weight:700'>Yuliana — Polaroid</div>
+      <button class="polaroid-close" id="polClose">Back</button>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const intro = document.getElementById('intro');
+      const biblizoom = document.getElementById('biblizoom');
+      const app = document.getElementById('app');
+
+      // Sequence: intro (2s) -> biblizoom (~1.1s) -> show app
+      setTimeout(()=>{
+        // hide intro visually
+        intro.style.transition = 'opacity .35s ease, transform .35s ease';
+        intro.style.opacity = 0;
+        intro.style.transform = 'scale(.98) translateY(-12px)';
+        setTimeout(()=>{ intro.style.display='none'; },380);
+
+        // show biblizoom
+        biblizoom.classList.add('show'); biblizoom.setAttribute('aria-hidden','false');
+        // after biblizoom duration, hide it and show app
+        setTimeout(()=>{
+          biblizoom.classList.remove('show'); biblizoom.setAttribute('aria-hidden','true');
+          app.classList.add('show'); app.removeAttribute('aria-hidden');
+        }, 1100);
+      }, 2000);
+
+      // Polaroid mode wiring
+      const polBtn = document.getElementById('openPol');
+      const polMode = document.getElementById('polaroidMode');
+      const polClose = document.getElementById('polClose');
+      const squaresContainer = document.querySelector('.polaroid-mode .squares');
+
+      polBtn.addEventListener('click', ()=>{
+        // populate squares with delays
+        squaresContainer.innerHTML = '';
+        for(let i=0;i<48;i++){
+          const d = document.createElement('div'); d.className='square';
+          d.style.animationDelay = ( (i%12)*80 + Math.floor(i/12)*120 ) + 'ms';
+          squaresContainer.appendChild(d);
+        }
+        polMode.classList.add('show'); polMode.setAttribute('aria-hidden','false');
+      });
+
+      polClose.addEventListener('click', ()=>{ polMode.classList.remove('show'); polMode.setAttribute('aria-hidden','true'); });
+      polMode.addEventListener('click',(e)=>{ if(e.target===polMode) { polMode.classList.remove('show'); polMode.setAttribute('aria-hidden','true'); } });
+
+      document.addEventListener('keydown',(e)=>{ if(e.key==='Escape'){ polMode.classList.remove('show'); } });
+    })();
+  </script>
+</body>
+</html>
